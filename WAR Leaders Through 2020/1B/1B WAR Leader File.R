@@ -34,7 +34,7 @@ firstbase_data$Era <- factor(firstbase_data$Era, levels = c("19th Century", "Dea
 firstbase_data_wide <- firstbase_data %>%
   spread(Season, WAR)
 
-#Replace null values with zeros to create HR totals for years where player is no longer active
+#Replace null values with zeros to create WAR totals for years where player is no longer active
 
 firstbase_data_wide[is.na(firstbase_data_wide)] <- 0.0
 
@@ -47,7 +47,7 @@ firstbase_data <- firstbase_data_wide %>%
 
 firstbase_data$Season <- as.integer(firstbase_data$Season)
 
-#Rearrange data and group by player to calculate running total of career HR by year
+#Rearrange data and group by player to calculate running total of career WAR by year
 
 firstbase_data <- firstbase_data %>%
   arrange(playerid, Season) %>%
@@ -60,7 +60,7 @@ firstbase_data <- firstbase_data %>%
 firstbase_data <- firstbase_data %>%
   rename(SeasonWAR = WAR, WAR = CareerWAR)
 
-#Create career WAR ranking by year and limit it to the top 20 spots
+#Create career WAR ranking by year and limit it to the top 10 spots
 
 top_data <- firstbase_data %>%
   group_by(Season) %>%

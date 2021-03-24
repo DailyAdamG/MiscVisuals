@@ -34,7 +34,7 @@ c_data$Era <- factor(c_data$Era, levels = c("19th Century", "Dead Ball", "Live B
 c_data_wide <- c_data %>%
   spread(Season, WAR)
 
-#Replace null values with zeros to create HR totals for years where player is no longer active
+#Replace null values with zeros to create WAR totals for years where player is no longer active
 
 c_data_wide[is.na(c_data_wide)] <- 0.0
 
@@ -47,7 +47,7 @@ c_data <- c_data_wide %>%
 
 c_data$Season <- as.integer(c_data$Season)
 
-#Rearrange data and group by player to calculate running total of career HR by year
+#Rearrange data and group by player to calculate running total of career WAR by year
 
 c_data <- c_data %>%
   arrange(playerid, Season) %>%
@@ -60,7 +60,7 @@ c_data <- c_data %>%
 c_data <- c_data %>%
   rename(SeasonWAR = WAR, WAR = CareerWAR)
 
-#Create career WAR ranking by year and limit it to the top 20 spots
+#Create career WAR ranking by year and limit it to the top 10 spots
 
 top_data <- c_data %>%
   group_by(Season) %>%

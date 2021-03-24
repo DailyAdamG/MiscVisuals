@@ -1,6 +1,6 @@
 #Set working directory
 
-setwd("C:/Users/daily/Desktop/Repositories/MiscVisuals/WAR Leaders Through 2020/SS")
+setwd("C:/Users/daily/Desktop/Repositories/MiscVisuals/WAR Leaders Through 2020/2B")
 
 #Load necessary libraries
 
@@ -11,45 +11,45 @@ library(hrbrthemes)
 
 #Import data
 
-ss_data <- read.csv("C:/Users/daily/Desktop/Repositories/MiscVisuals/WAR Leaders Through 2020/SS/SS WAR Leaders Bar Chart Race.csv")
+secondbase_data <- read.csv("C:/Users/daily/Desktop/Repositories/MiscVisuals/WAR Leaders Through 2020/2B/2B WAR Leaders Bar Chart Race.csv")
 
 #Make data wide so that I can replace null values with zeros
 
-ss_data <- ss_data %>%
+secondbase_data <- secondbase_data %>%
   arrange(playerid, Season) %>%
   group_by(playerid) %>%
   mutate(FirstYear = min(Season)) %>%
   mutate(Era = ifelse(FirstYear <= 1900, "19th Century",
-                              ifelse(FirstYear <= 1919, "Dead Ball",
-                                     ifelse(FirstYear <= 1941, "Live Ball",
-                                            ifelse(FirstYear <= 1960, "Integration",
-                                                   ifelse(FirstYear <= 1976, "Expansion",
-                                                          ifelse(FirstYear <= 1993, "Free Agency",
-                                                                 ifelse(FirstYear <= 2005, "Steroid", "Modern"))))))))
+                      ifelse(FirstYear <= 1919, "Dead Ball",
+                             ifelse(FirstYear <= 1941, "Live Ball",
+                                    ifelse(FirstYear <= 1960, "Integration",
+                                           ifelse(FirstYear <= 1976, "Expansion",
+                                                  ifelse(FirstYear <= 1993, "Free Agency",
+                                                         ifelse(FirstYear <= 2005, "Steroid", "Modern"))))))))
 
 #Reorder the eras to be chronological
 
-ss_data$Era <- factor(ss_data$Era, levels = c("19th Century", "Dead Ball", "Live Ball", "Integration", "Expansion", "Free Agency", "Steroid", "Modern"))
+secondbase_data$Era <- factor(secondbase_data$Era, levels = c("19th Century", "Dead Ball", "Live Ball", "Integration", "Expansion", "Free Agency", "Steroid", "Modern"))
 
-ss_data_wide <- ss_data %>%
+secondbase_data_wide <- secondbase_data %>%
   spread(Season, WAR)
 
 #Replace null values with zeros to create WAR totals for years where player is no longer active
 
-ss_data_wide[is.na(ss_data_wide)] <- 0.0
+secondbase_data_wide[is.na(secondbase_data_wide)] <- 0.0
 
 #Go back to long data format
 
-ss_data <- ss_data_wide %>%
+secondbase_data <- secondbase_data_wide %>%
   gather(Season, WAR, "1871":"2020")
 
 #Change Year column to integer
 
-ss_data$Season <- as.integer(ss_data$Season)
+secondbase_data$Season <- as.integer(secondbase_data$Season)
 
 #Rearrange data and group by player to calculate running total of career WAR by year
 
-ss_data <- ss_data %>%
+secondbase_data <- secondbase_data %>%
   arrange(playerid, Season) %>%
   group_by(playerid) %>%
   mutate(CareerWAR = round(cumsum(WAR),1)) %>%
@@ -57,12 +57,12 @@ ss_data <- ss_data %>%
 
 #Rename columns
 
-ss_data <- ss_data %>%
+secondbase_data <- secondbase_data %>%
   rename(SeasonWAR = WAR, WAR = CareerWAR)
 
 #Create career WAR ranking by year and limit it to the top 10 spots
 
-top_data <- ss_data %>%
+top_data <- secondbase_data %>%
   group_by(Season) %>%
   arrange(Season, -WAR) %>%
   mutate(Rank = row_number()) %>%
@@ -79,7 +79,7 @@ p <- top_data %>%
   coord_flip(clip="off") +
   scale_x_discrete("") +
   scale_y_continuous("", labels = scales::comma, limits = c(0,200)) +
-  hrbrthemes::theme_ipsum(plot_title_size = 24, subtitle_size = 16, caption_size = 10, base_size = 12) +
+  hrbrthemes::theme_ipsum(plot_title_size = 20, subtitle_size = 16, caption_size = 10, base_size = 12) +
   scale_fill_brewer(palette = "Spectral") +
   theme(panel.grid.major.y=element_blank(),
         panel.grid.minor.x=element_blank(),
@@ -88,7 +88,7 @@ p <- top_data %>%
         plot.margin = margin(1,1,1,2,"cm")) +
   transition_time(Season) +
   ease_aes("cubic-in-out") +
-  labs(title = "Top 10 Shortstops by Career WAR",
+  labs(title = "Top 10 Second Basemen by Career WAR",
        subtitle = "{frame_time} Season",
        caption = "WAR figures from FanGraphs.com")
 
@@ -98,4 +98,4 @@ anim <- animate(p, nframes = 160, fps = 2, end_pause = 10, renderer = magick_ren
 
 #Save the visual
 
-anim_save("SS_WAR_Bar_Race.gif", anim)
+anim_save("2B_WAR_Bar_Race.gif", anim)
