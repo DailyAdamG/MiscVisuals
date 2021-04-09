@@ -49,3 +49,5 @@ p <- data %>%
 #Animate the visual
 
 anim <- animate(p, nframes = 150, fps = 5, width = 608, height = 365, end_pause = 10, renderer = magick_renderer())
+
+anim_save("Tony Gwynn 1994 BA Chase.gif", anim)
