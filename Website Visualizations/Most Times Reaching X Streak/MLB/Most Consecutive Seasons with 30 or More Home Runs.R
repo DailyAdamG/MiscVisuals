@@ -39,43 +39,14 @@ RANK () OVER(PARTITION BY People.playerID ORDER BY Batting.yearID) AS SeasonNumb
               GROUP BY playerID, streakID
               ORDER BY Times DESC')
 
-################################################################################
-
-#Doing the same thing as earlier but using R instead of SQL
-
-fun_data <- sqldf('SELECT People.playerID, Batting.yearID, People.nameFirst, People.nameLast,
-GROUP_CONCAT(TeamsFranchises.franchName) AS Teams, TeamsFranchises.franchID, SUM(Batting.HR) AS HR
-FROM People
-INNER JOIN Batting
-ON People.playerID = Batting.playerID
-INNER JOIN Teams
-ON Batting.teamID = Teams.teamID
-AND Batting.yearID = Teams.yearID
-INNER JOIN TeamsFranchises
-ON Teams.franchID = TeamsFranchises.franchID
-GROUP BY Batting.playerID, Batting.yearID')
-
-fun_data <- fun_data %>%
-  arrange(playerID, yearID) %>%
-  group_by(playerID) %>%
-  mutate(SeasonNumber = rank(yearID)) %>%
-  filter(HR >= 30) %>%
-  mutate(HRList = rank(yearID)) %>% 
-  mutate(streakID = SeasonNumber - HRList)
-  
-fun_data <- aggregate(x = fun_data$HR, by = list(fun_data$playerID, fun_data$nameFirst, fun_data$nameLast,
-                                     fun_data$streakID), FUN = length) %>%
-  arrange(-x)
-
-#################################################################################
-
 #Combine Columns and Filter Data
 
 top_data <- data %>%
   mutate(Rank = rank(-Times, ties.method = "min"))  %>%
   filter(Rank <= 10) %>%
   mutate(DisplayFranchises = ifelse(Franchises != 1, "Multiple Teams", Teams)) %>%
-  mutate(chart_label = paste(nameFirst, nameLast, "\n", MIN, "-", MAX, "\n", DisplayFranchises))
+  mutate(fullName = paste(nameFirst, nameLast)) %>%
+  mutate(chart_label = paste(nameFirst, nameLast, "\n", MIN, "-", MAX))
 
 #Team Colors for display
 
@@ -109,12 +80,24 @@ fill_color <- c("Arizona Diamondbacks" = "#5F259F",
                 "Texas Rangers" = "#C0111F",
                 "Toronto Blue Jays" = "#134A8E",
                 "Washington Nationals" = "#AB0003",
-                "Multiple Teams" = "seashell")
+                "Multiple Teams" = "seashell",
+                "Barry Bonds" = "#FD5A1E",
+                "Alex Rodriguez" = "#0C2340",
+                "Jimmie Foxx" = "#003831",
+                "Albert Pujols" = "#C41E3A",
+                "Carlos Delgado" = "#134A8E",
+                "Sammy Sosa" = "#0E3386",
+                "Lou Gehrig" = "#0C2340",
+                "Eddie Mathews" = "#13274F",
+                "Rafael Palmeiro" = "#DF4601",
+                "Manny Ramirez" = "#BD3039",
+                "Mike Schmidt" = "#E81828",
+                "Jim Thome" = "#E31937")
 
 #Create visual
 
 top_data %>%
-  ggplot(aes(x = reorder(chart_label, Times), y = Times, fill = DisplayFranchises)) +
+  ggplot(aes(x = reorder(chart_label, Times), y = Times, fill = fullName)) +
   geom_bar(stat = "identity", color = "black") +
   geom_text(aes(label = Times), fontface = "bold", hjust = -0.3) +
   coord_flip(ylim = c(0, 15)) +
