@@ -68,6 +68,7 @@ display_data <- sqldf('SELECT firstYear AS MIN,
       FROM data
       GROUP BY playerID, yearID
       HAVING PA_Total >= 1500
+      AND Range >= 2
       ORDER BY OBP DESC')
 
 #Add index number to find overlapping values (Only finds overlapping values for top value in group)

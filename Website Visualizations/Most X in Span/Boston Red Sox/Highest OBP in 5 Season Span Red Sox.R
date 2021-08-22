@@ -8,13 +8,12 @@ library(sqldf)
 library(tidyverse)
 library(zoo)
 library(data.table)
-library(weights)
 library(Lahman)
 
 #Get data from Lahman Database
 
 data <- sqldf('SELECT People.playerID, Batting.yearID, People.nameFirst, People.nameLast,
-GROUP_CONCAT(TeamsFranchises.franchName) AS Teams, TeamsFranchises.franchID, SUM(Batting.H) AS H, 
+TeamsFranchises.franchName AS Teams, TeamsFranchises.franchID, SUM(Batting.H) AS H,
 SUM(Batting.AB) AS AB, SUM(Batting.BB) AS BB, SUM(Batting.HBP) AS HBP, SUM(Batting.SF) AS SF, SUM(Batting.SH) AS SH
                     FROM People
                     INNER JOIN Batting
@@ -36,19 +35,25 @@ data[is.na(data)] <- 0
 data <- data %>%
   arrange(playerID, yearID) %>%
   group_by(playerID) %>%
-  mutate(H_Total = rollapply(H, width = 3, FUN = sum, align = "right",partial = TRUE)) %>%
-  mutate(AB_Total = rollapply(AB, width = 3, FUN = sum, align = "right",partial = TRUE)) %>%
-  mutate(BB_Total = rollapply(BB, width = 3, FUN = sum, align = "right",partial = TRUE)) %>%
-  mutate(HBP_Total = rollapply(HBP, width = 3, FUN = sum, align = "right",partial = TRUE)) %>%
-  mutate(SF_Total = rollapply(SF, width = 3, FUN = sum, align = "right",partial = TRUE)) %>%
-  mutate(SH_Total = rollapply(SH, width = 3, FUN = sum, align = "right",partial = TRUE)) %>%
+  mutate(H_Total = rollapply(H, width = 5, FUN = sum, align = "right",partial = TRUE)) %>%
+  mutate(AB_Total = rollapply(AB, width = 5, FUN = sum, align = "right",partial = TRUE)) %>%
+  mutate(BB_Total = rollapply(BB, width = 5, FUN = sum, align = "right",partial = TRUE)) %>%
+  mutate(HBP_Total = rollapply(HBP, width = 5, FUN = sum, align = "right",partial = TRUE)) %>%
+  mutate(SF_Total = rollapply(SF, width = 5, FUN = sum, align = "right",partial = TRUE)) %>%
+  mutate(SH_Total = rollapply(SH, width = 5, FUN = sum, align = "right",partial = TRUE)) %>%
   mutate(PA_Total = AB_Total + BB_Total + HBP_Total + SF_Total + SH_Total) %>%
-  mutate(firstYear_rd = lag(yearID, 2)) %>%
+  mutate(firstYear_rd = lag(yearID, 4)) %>%
   fill(firstYear_rd, .direction = "up") %>%
-  mutate(first_year_2_rd = lag(yearID,1)) %>%
+  mutate(first_year_2_rd = lag(yearID,3)) %>%
   fill(first_year_2_rd, .direction = "up") %>%
-  mutate(firstYear = ifelse(is.na(firstYear_rd) & is.na(first_year_2_rd), yearID,
-                            ifelse(is.na(firstYear_rd), first_year_2_rd, firstYear_rd))) %>%
+  mutate(first_year_3_rd = lag(yearID,2)) %>%
+  fill(first_year_3_rd, .direction = "up") %>%
+  mutate(first_year_4_rd = lag(yearID,1)) %>%
+  fill(first_year_4_rd, .direction = "up") %>%
+  mutate(firstYear = ifelse(is.na(firstYear_rd) & is.na(first_year_2_rd) & is.na(first_year_3_rd) & is.na(first_year_4_rd), yearID,
+                            ifelse(is.na(firstYear_rd) & is.na(first_year_2_rd) & is.na(first_year_3_rd), first_year_4_rd,
+                                   ifelse(is.na(firstYear_rd) & is.na(first_year_2_rd), first_year_3_rd,
+                                          ifelse(is.na(firstYear_rd), first_year_2_rd, firstYear_rd))))) %>%
   mutate(Range = yearID - firstYear) %>%
   ungroup()
 
@@ -64,12 +69,12 @@ display_data <- sqldf('SELECT firstYear AS MIN,
       H_Total,
       AB_Total,
       PA_Total,
-      cast(H_Total AS real) / cast(AB_Total AS real) AS BA
+      (cast(H_Total AS real) + cast(BB_Total AS real) + cast(HBP_Total AS real)) / (cast(AB_Total AS real) + cast(BB_Total AS real) + cast(HBP_Total AS real) + cast(SF_Total AS real)) AS OBP
       FROM data
       GROUP BY playerID, yearID
-      HAVING PA_Total >= 1500
-      AND Range >= 2
-      ORDER BY BA DESC')
+      HAVING PA_Total >= 2500
+      AND Range >= 4
+      ORDER BY OBP DESC')
 
 #Add index number to find overlapping values (Only finds overlapping values for top value in group)
 
@@ -83,13 +88,13 @@ no_dupes <- display_data %>%
   slice_head() %>%
   group_by(playerID,MIN) %>%
   slice_head() %>%
-  arrange(-BA) %>%
+  arrange(-OBP) %>%
   ungroup()
 
 #Limit to top 10 spots
 
 top_data <- no_dupes %>%
-  mutate(Rank = rank(-BA, ties.method = "min")) %>%
+  mutate(Rank = rank(-OBP, ties.method = "min")) %>%
   filter(Rank <= 10)
 
 #Combine columns for display
@@ -144,11 +149,11 @@ numformat <- function(val) { sub("^(-?)0.", "\\1.", sprintf("%.3f", val)) }
 #Create visual
 
 top_data %>%
-  ggplot(aes(x = reorder(chart_label, BA), y = BA, fill = EvenOdd)) +
+  ggplot(aes(x = reorder(chart_label, OBP), y = OBP, fill = EvenOdd)) +
   geom_bar(stat = "identity", color = "black") +
-  geom_text(aes(label = rd(BA,3)), fontface = "bold", hjust = -0.3) +
-  coord_flip(ylim = c(.325, .370)) +
-  scale_y_continuous(breaks = seq(.325, .370, .005), labels = numformat) +
+  geom_text(aes(label = rd(OBP,3)), fontface = "bold", hjust = -0.3) +
+  coord_flip(ylim = c(.405, .510)) +
+  scale_y_continuous(breaks = seq(.405, .510, .005), labels = numformat) +
   scale_fill_manual(values = c("Odd" = "#BD3039", "Even" = "#0C2340")) +
   theme(plot.title = element_text(size = 16, face = "bold"),
         plot.subtitle = element_text(size = 12),
@@ -156,7 +161,7 @@ top_data %>%
         axis.text.x = element_text(size = 10),
         axis.text.y = element_text(size = 10, face ="bold"),
         legend.position = "none") +
-  labs(title = "Boston Red Sox Franchise History\nHighest Batting Average in a 3 Season Span\n(Minimum of 1500 Plate Appearances)",
+  labs(title = "Boston Red Sox Franchise History\nHighest OBP in a 5 Season Span\n(Minimum of 2500 Plate Appearances)",
        subtitle = "Excluding Overlapping Seasons",
        x = "",
-       y = "Batting Average")
+       y = "On-base Percentage")

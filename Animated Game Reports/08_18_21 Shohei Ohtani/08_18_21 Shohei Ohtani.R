@@ -1,6 +1,6 @@
 #Set working directory and loading libraries
 
-setwd("C:/Users/daily/Desktop/Repositories/MiscVisuals/Animated Game Reports/08_19_21 Shohei Ohtani")
+setwd("C:/Users/daily/Desktop/Repositories/MiscVisuals/Animated Game Reports/08_18_21 Shohei Ohtani")
 
 library(ggplot2)
 library(ggrepel)
@@ -9,7 +9,7 @@ library(dplyr)
 
 #Import csv file
 
-data <- read.csv("08_19_21 Shohei Ohtani.csv")
+data <- read.csv("08_18_21 Shohei Ohtani.csv")
 
 ################################################################################
 
@@ -975,7 +975,7 @@ anim28 <- animate(viz28, nframes = nrow(data %>% filter(my_ab == 27)), fps = .25
 
 #Combine animations into 1 GIF
 
-anim_save("08_19_21 Shohei Ohtani.gif", c(anim1, anim2, anim3, anim4, anim5,
+anim_save("08_18_21 Shohei Ohtani.gif", c(anim1, anim2, anim3, anim4, anim5,
                                           anim6, anim7, anim8, anim9, anim10,
                                           anim11, anim12, anim13, anim14, anim15,
                                           anim16, anim17, anim18, anim19, anim20,
