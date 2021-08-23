@@ -135,7 +135,7 @@ top_data %>%
         axis.text.x = element_text(size = 10),
         axis.text.y = element_text(size = 10, face ="bold"),
         legend.position = "none") +
-  labs(title = "Balimore Orioles Franchise History\nMost Hits in a 3 Season Span",
+  labs(title = "Baltimore Orioles Franchise History\nMost Hits in a 3 Season Span",
        subtitle = "Excluding Overlapping Seasons",
        x = "",
        y = "Hits")
