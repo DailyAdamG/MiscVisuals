@@ -13,7 +13,7 @@ library(Lahman)
 #Get data from Lahman Database
 
 data <- sqldf("SELECT People.playerID, People.nameFirst, People.nameLast,
-TeamsFranchises.franchName AS Team, TeamsFranchises.franchID, Batting.HR, Batting.yearID
+TeamsFranchises.franchName AS Team, TeamsFranchises.franchID, SUM(Batting.HR) AS HR, Batting.yearID
                     FROM People
                     INNER JOIN Batting
                     ON People.playerID = Batting.PlayerID
@@ -23,6 +23,7 @@ TeamsFranchises.franchName AS Team, TeamsFranchises.franchID, Batting.HR, Battin
                     INNER JOIN TeamsFranchises
                     ON Teams.franchID = TeamsFranchises.franchID
                     WHERE TeamsFranchises.franchName = 'Cleveland Indians'
+                    GROUP BY People.playerID, Batting.yearID
                     ORDER BY Batting.HR DESC")
 
 #Limit to top 10 spots
