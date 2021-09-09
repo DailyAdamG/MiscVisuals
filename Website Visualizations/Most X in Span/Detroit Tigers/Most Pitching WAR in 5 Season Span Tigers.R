@@ -11,9 +11,9 @@ library(zoo)
 library(data.table)
 library(Lahman)
 
-#Import WAR Data
+#Import Pitching WAR Data
 
-data <- read.csv("C:/Users/daily/Desktop/Repositories/MiscVisuals/Website Visualizations/Most X in Span/Detroit Tigers/Most Position Player WAR in 5 Season Span Tigers.csv")
+data <- read.csv("C:/Users/daily/Desktop/Repositories/MiscVisuals/Website Visualizations/Most X in Span/Detroit Tigers/Most Pitching WAR in 5 Season Span Tigers.csv")
 
 #Calculate the totals and find the season the span started
 
@@ -35,6 +35,7 @@ data <- data %>%
                                           ifelse(is.na(firstYear_rd), first_year_2_rd, firstYear_rd))))) %>%
   mutate(Range = Season - firstYear) %>%
   ungroup()
+
 
 #Choose only the columns needed for visual
 
@@ -63,21 +64,9 @@ no_dupes <- display_data %>%
   arrange(-WAR_Total) %>%
   ungroup()
 
-#################################################################################
-
-#DOUBLE CHECK TO MAKE SURE VALUES IN DATA SET DO NOT OVERLAP!!!
-
-#Remove any strays that show up in no_dupes even after logic (May not be necessary for all files)
-
-no_dupes <- no_dupes %>%
-  filter(Name !='Ty Cobb' | MIN != 1914 & MIN != 1916 & MIN != 1918)
-
-#################################################################################
-
 #Limit to top 10 spots
 
 top_data <- no_dupes %>%
-  arrange(-WAR_Total, desc(Name)) %>%
   mutate(Rank = rank(-WAR_Total, ties.method = "min")) %>%
   filter(Rank <= 10)
 
@@ -144,16 +133,16 @@ top_data %>%
   ggplot(aes(x = reorder(chart_label, WAR_Total), y = WAR_Total, fill = EvenOdd)) +
   geom_bar(stat = "identity", color = "black") +
   geom_text(aes(label = rd(WAR_Total,1)), fontface = "bold", hjust = -0.3) +
-  coord_flip(ylim = c(25, 50)) +
-  scale_y_continuous(breaks = seq(25, 50, 5)) +
-  scale_fill_manual(values = c("Odd" = "#0C2340", "Even" = "#FA4616")) +
+  coord_flip(ylim = c(20, 40)) +
+  scale_y_continuous(breaks = seq(20, 40, 1)) +
+  scale_fill_manual(values = c("Odd" = "#FA4616", "Even" = "#0C2340")) +
   theme(plot.title = element_text(size = 16, face = "bold"),
         plot.subtitle = element_text(size = 12),
         axis.title.x = element_text(size = 12, face = "bold"),
         axis.text.x = element_text(size = 10),
         axis.text.y = element_text(size = 10, face ="bold"),
         legend.position = "none") +
-  labs(title = "Detroit Tigers Franchise History\nMost WAR in a 5 Season Span",
+  labs(title = "Detroit Tigers Franchise History\nMost Pitching WAR in a 5 Season Span",
        subtitle = "Excluding Overlapping Seasons",
        x = "",
        y = "WAR")
