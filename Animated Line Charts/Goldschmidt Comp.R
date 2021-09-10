@@ -38,11 +38,11 @@ p <- data %>%
   hrbrthemes::theme_ipsum(plot_title_size = 24, base_size = 16) +
   theme(panel.grid.major.y=element_blank(),
         panel.grid.minor.x=element_blank(),
-        plot.margin = margin(1,1,1,2,"cm"),
-        axis.text.x = element_text(angle = 65)) +
+        plot.margin = margin(1,1,1,2,"cm")) +
+        #axis.text.x = element_text(angle = 65)) +
   transition_reveal(Age) +
   ease_aes("linear") +
-  view_follow() +
+  #view_follow() +
   labs(title = "Paul Goldschmidt WAR vs. Top 5 Bill James Similarity Scores", subtitle = "Only Includes Players Who Have Finished Their Career", x = "Season Age", y = "Career WAR")
 
 #Animate the visual
