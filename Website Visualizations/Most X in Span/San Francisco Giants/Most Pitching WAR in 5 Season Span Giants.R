@@ -13,7 +13,7 @@ library(Lahman)
 
 #Import Pitching WAR Data
 
-data <- read.csv("C:/Users/daily/Desktop/Repositories/MiscVisuals/Website Visualizations/Most X in Span/San Francisco Giants/Most Pitching WAR in 5 Season Span.csv")
+data <- read.csv("C:/Users/daily/Desktop/Repositories/MiscVisuals/Website Visualizations/Most X in Span/San Francisco Giants/Most Pitching WAR in 5 Season Span Giants.csv")
 
 #Calculate the totals and find the season the span started
 
